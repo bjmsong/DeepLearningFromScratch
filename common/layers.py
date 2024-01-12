@@ -197,8 +197,8 @@ class BatchNormalization:
 
 class Convolution:
     def __init__(self, W, b, stride=1, pad=0):
-        self.W = W
-        self.b = b
+        self.W = W  # 滤波器矩阵
+        self.b = b  # (FN,1,1) 
         self.stride = stride
         self.pad = pad
         
@@ -212,7 +212,7 @@ class Convolution:
         self.db = None
 
     def forward(self, x):
-        FN, C, FH, FW = self.W.shape
+        FN, C, FH, FW = self.W.shape  # 输出通道数、channel数、高、宽
         N, C, H, W = x.shape
         out_h = 1 + int((H + 2*self.pad - FH) / self.stride)
         out_w = 1 + int((W + 2*self.pad - FW) / self.stride)
@@ -220,8 +220,10 @@ class Convolution:
         col = im2col(x, FH, FW, self.stride, self.pad)
         col_W = self.W.reshape(FN, -1).T
 
-        out = np.dot(col, col_W) + self.b
-        out = out.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2)
+        out = np.dot(col, col_W) + self.b  # 转换成了矩阵乘法！
+        # reshape: 改变数组形状，元素在内存中的排布顺序保持不变
+        # transpose: 改变元素在内存中的排布顺序
+        out = out.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2) # 二维 -> 4维
 
         self.x = x
         self.col = col

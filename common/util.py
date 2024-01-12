@@ -38,12 +38,12 @@ def conv_output_size(input_size, filter_size, stride=1, pad=0):
 
 def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
     """
-
+    对输入特征图做im2col变换
     Parameters
     ----------
-    input_data : 由(数据量, 通道, 高, 长)的4维数组构成的输入数据
+    input_data : 由(数据量/batch_size, 通道/channel, 高, 宽)的4维数组构成的输入数据
     filter_h : 滤波器的高
-    filter_w : 滤波器的长
+    filter_w : 滤波器的宽
     stride : 步幅
     pad : 填充
 
@@ -55,8 +55,9 @@ def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
     out_h = (H + 2*pad - filter_h)//stride + 1
     out_w = (W + 2*pad - filter_w)//stride + 1
 
+    # input_data的第一个和第二个维度不填充(0,0)，第三个和第四个维度(H，W)，分别填充pad个元素(pad, pad), 填充值为0 
     img = np.pad(input_data, [(0,0), (0,0), (pad, pad), (pad, pad)], 'constant')
-    col = np.zeros((N, C, filter_h, filter_w, out_h, out_w))
+    col = np.zeros((N, C, filter_h, filter_w, out_h, out_w))  # 
 
     for y in range(filter_h):
         y_max = y + stride*out_h
@@ -64,7 +65,7 @@ def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
             x_max = x + stride*out_w
             col[:, :, y, x, :, :] = img[:, :, y:y_max:stride, x:x_max:stride]
 
-    col = col.transpose(0, 4, 5, 1, 2, 3).reshape(N*out_h*out_w, -1)
+    col = col.transpose(0, 4, 5, 1, 2, 3).reshape(N*out_h*out_w, -1)  # 转成2维数组
     return col
 
 
